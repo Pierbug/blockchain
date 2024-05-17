@@ -1,6 +1,6 @@
 <?php
-     if (isset($_POST[$_POST['ipBlocco']]) && isset($_POST['portaBlocco'])) {
-
+     if (isset($_POST['ipBlocco']) && isset($_POST['portaBlocco'])) {
+        
      }
 
 ?>
