@@ -2,12 +2,10 @@
 class Host{
     private $ip;
     private $porta;
-    private $hash;
 
-    public function __construct($ip=null, $porta=null, $hash=null){
+    public function __construct($ip=null, $porta=null){
         $this->ip = $ip;
         $this->porta = $porta;
-        $this->hash = $hash;
     }
     public function setIp($ip){
         $this->ip = $ip;
@@ -20,12 +18,6 @@ class Host{
     }
     public function getPorta($porta){
         return $this->porta;
-    }
-    public function setHash($hash){
-        $this->hash = $hash;
-    }
-    public function getHash(){
-        return $this->hash;
     }
 
     public function toAssocArray() {
