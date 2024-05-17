@@ -8,6 +8,8 @@ class Block {
     private $successivo;
     private $precedente;
 
+    private $hash;
+
     public function __construct($actual,$precedente = null){
         $this->actual = $actual;
         $this->successivo = new Host();
@@ -17,8 +19,19 @@ class Block {
             $this->precedente = $precedente;
         $this->transactions = [];
         $this->id = $this->calculateId();
+        $this->hash = $this->calculateHash();
     }
-
+    public function calculateHash(){
+        $s = "";
+        for($i=0;$i<20;$i++){
+            $x = rand(48,90);
+            if($x < 58 || $x > 64)
+                $s .= chr($i);
+            else
+                $i = $i - 1;
+        }
+        return $s;
+    }
     public function calculateId(){
         $s = "";
         for($i=0;$i<20;$i++){
