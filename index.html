@@ -10,7 +10,7 @@
     <h1>BlockChain</h1>
     <div class="button-container">
         <button class="red-button">Aggiungi Blocco</button>
-        <button class="red-button">Mostra Tutti i Blocchi</button>
+        <button class="red-button">Mostra Blocchi</button>
     </div>
 </body>
 </html>
