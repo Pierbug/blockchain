@@ -31,6 +31,21 @@ class Block {
         return $s;
     }
 
+    public function saveJson(){
+        $data = [
+            'id' => $this->id,
+            'actual' => $this->actual,
+            'transactions' => $this->transactions,
+            'successivo' => $this->successivo, // Assuming Host class has __toString() or similar method
+            'precedente' => $this->precedente  // Assuming Host class has __toString() or similar method
+        ];
+
+        $json_data = json_encode($data, JSON_PRETTY_PRINT);
+
+        $filename = 'block_' . $this->id . '.json';
+        file_put_contents($filename, $json_data);
+    }
+
     public function getSuccessivo(){
         return $this->successivo;
     }
