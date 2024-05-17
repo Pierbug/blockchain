@@ -16,7 +16,7 @@ class Block {
         else
             $this->precedente = $precedente;
         $this->transactions = [];
-        $this->id= $this->calculateId();
+        $this->id = $this->calculateId();
     }
 
     public function calculateId(){
@@ -29,6 +29,26 @@ class Block {
                 $i = $i - 1;
         }
         return $s;
+    }
+
+    public function getSuccessivo(){
+        return $this->successivo;
+    }
+
+    public function setSuccessivo($successivo){
+        $this->successivo = $successivo;
+    }
+
+    public function getPrecedente(){
+        return $this->precedente;
+    }
+
+    public function setPrecedente($precedente){
+        $this->precedente = $precedente;
+    }
+
+    public function getActual(){
+        return $this->actual;
     }
 
     public function getId() {
