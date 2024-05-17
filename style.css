@@ -1,12 +1,16 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #f4f4f4;
+    background-color: #222;
+    color: #fff;
     padding: 50px;
 }
 
 h1 {
-    color: #333;
+    color: #ff4500;
+    font-size: 72px;
+    text-shadow: 2px 2px 4px rgba(255, 69, 0, 0.8);
+    margin-bottom: 50px;
 }
 
 .button-container {
@@ -14,17 +18,19 @@ h1 {
 }
 
 .red-button {
-    background-color: red;
-    color: white;
+    background-color: #ff4500;
+    color: #fff;
     border: none;
     padding: 15px 30px;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
     margin: 10px;
     transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 5px;
 }
 
 .red-button:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(255, 69, 0, 0.8);
 }
