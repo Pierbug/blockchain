@@ -9,7 +9,7 @@ class Block {
     private $transactions = [];
     private $successivo;
     private $precedente;
-
+    private $hash;     //hash utile
     //grande problema da risolvere: noi non abbiamo l'hash tra i dati e va messo olttre a mettere anche hash successivo e hash precedente. 
     //l'hash del blocco deve essere aggiornato ogni volta che si effettua una transazione ||FATTO||
     //con questo aggiorna anche l'hash successivo del blocco precedente e l'hash precendente del blocco succ
@@ -17,14 +17,20 @@ class Block {
     //MENATA FESS (riga 13-15)
     
 
-    public function __construct($actual,$precedente = null){//metteri come parametro possibile $id = calculateId() se si puo cosi
+    public function __construct($actual,$id = null,$precedente = null){//metteri come parametro possibile $id = calculateId() se si puo cosi
         $this->actual = $actual;                            //almeno si puo aggiornare json attraverso quello siccome il filename è id
         $this->successivo = new Host();
         $this->first = new Host("192.168.12.10",80);
         $this->precedente = new Host();
         $this->transactions = [];
-        $this->id = $this->calculateId();
-        //sbagliato farlo ogni volta che si crea perche se io creo un oggetto ogni volta che ricerco si creano infinit file
+        $this->hash = $this->calculateHash();
+        if($id == null)
+            $this->id = $this->calculateId();   //fatto cio perche se è un nuovo blocco genero id
+        else{
+            $this->id = $id;                    //se id è passato allora poi faccio importJSON con i dati del blocco
+            $this->importJson();
+        } 
+        //sbagliato salvare json ogni volta che si crea perche se io creo un oggetto ogni volta che ricerco si creano infinit file
     }
 
     private function calculateHash() {
@@ -61,6 +67,23 @@ class Block {
         }
         return $s;
     }
+
+    public function importJson(){
+        $filename = "".$this->id.".json";
+        $json = file_get_contents($filename);
+        $array = json_decode($json, true);
+        $trans = $array['transazioni'];
+        $this->id = $array['id'];
+        $this->hash = $array['hash'];
+        $this->actual = new Host($array['actual IP'],$array['actual Port']);
+        $this->successivo = new Host($array['successivo IP'],$array['successivo Port']);
+        $this->precedente = new Host($array['precedente IP'],$array['precedente Port']);
+        for($i=0;$i<count($trans);$i++){
+            $t = $trans[$i];
+            $this->addTransactions(new Transaction($t['mittente'],$t['destinatario'],$t['amount'],$t['time'],$t['hash']));
+        }
+    }
+
     public function saveJson(){
         //di solito il json si crea in automatico dato un oggetto, prova a cercare la funzione 
         //che lo faccia, se non la trovi fai così e fai la import json che sarà una funzione statica 
@@ -116,6 +139,10 @@ class Block {
 
     public function getActual(){
         return $this->actual;
+    }
+
+    public function getHash(){
+        return $this->hash;
     }
 
     public function getId() {

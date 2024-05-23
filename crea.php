@@ -13,17 +13,19 @@ require_once("Transaction.php");
 // HO AGGIUNTO ADDTRANSACTIONS 
 
 
-//$block = new Block(new Host("192.168.12.15",80));
-//$block->addTransactions(new Transaction("Alessio","Pietro","15",date("Y-m-d H:i:s")));
-//$block->addTransactions(new Transaction("Fabio","Pietro","30",date("Y-m-d H:i:s")));
-//$b2= new Block(new Host("192.168.12.10",80),new Host("192.168.12.15",80),new Host("192.168.12.15",80));
+$block = new Block(new Host("192.168.12.15",80));
+$id = $block->getId();
+$ip1 = $block->getActual();          //QUESTA é LA PROVA CHE FUNZIONA PERCHE PURE SE $b2 ho messo il '''Mio indirizzo''' ma volevo 
+echo "primo: ".$ip1->getIp();        //vedere il blocco con id = $id infatti i dati di $b2 pure se nuovo blocco sono identici a $block
 
-$first = new Block(new Host("192.168.12.10",80));
-$block = new Block(new Host("192.168.12.15",80),$first->getActual());
-
-for($i=0;$i<10;$i++){
-    $block->addTransactions(new Transaction("Pietro","Alessio",$i,date("Y-m-d H:i:s")));
+for($i=0;$i<20;$i++){
+    $block->addTransactions(new Transaction("mittente",'destinatario','amount','time','hash'));
 }
+$block->saveJson();
 
-$block->saveJson()
+
+$b2 = new Block(new Host("192.168.12.100",80),$id);
+$ip2 = $b2->getActual();
+echo "secondo: ".$ip2->getIp();
+
 ?>
