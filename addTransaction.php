@@ -13,7 +13,6 @@ if(isset($_POST['t'])){
             $block->addTransactions(new Transaction($_POST['mitt'],$_POST['dest'],$_POST['amou'],date('Y-m-d H:i:s')));
             $block->saveJson();
             $i++;
-            echo "Tutto apposto";
         }
     }
     

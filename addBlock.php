@@ -3,7 +3,7 @@ require_once("Block.php");
 require_once("Host.php");
 require_once("Transaction.php");
     if(isset($_POST['ipBlocco']) && isset($_POST['portaBlocco'])){
-        $block = new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']),$first);
+        $block = new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']));
     }else{
 
 ?>
