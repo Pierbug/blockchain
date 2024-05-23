@@ -1,6 +1,9 @@
 <?php
+require_once("Block.php");
+require_once("Host.php");
+require_once("Transaction.php");
     if(isset($_POST['ipBlocco']) && isset($_POST['portaBlocco'])){
-        new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']));
+        new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']),new Host("192.168.12.15",80),);
     }else{
 
 ?>
@@ -27,4 +30,20 @@
 </html>
 <?php
     }
+    function firstHost(){
+        return new Host("192.168.12.15",80);
+    }
+    
+    // function lastHost(){
+    // $host = null;  
+    //     if(){
+        
+    // }
+    //funzione che controlla se il succ del primo blocco è null
+    // allora ritorna il primo blocco
+    // altrimenti controlla il blocco dopo, se il succ è null
+    // allora ritorna succ
+    // controlla blocco nuovo...
+    //come controllare? dato host di succ, devi andare a quel server con quell'inidirizzo
+    //prendere il file chiamato block.json perchè non lo dobbiamo rinominare anche con l'id sennò è un casino
 ?>

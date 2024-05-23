@@ -23,5 +23,5 @@ class Host{
     public function toAssocArray() {
         return get_object_vars($this);
     }
+    
 }
-?>

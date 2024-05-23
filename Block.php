@@ -10,7 +10,12 @@ class Block {
     private $successivo;
     private $precedente;
 
-    public function __construct($actual,$first = null,$precedente = null,){
+    //grande problema da risolvere: noi non abbiamo l'hash tra i dati e va messo olttre a mettere anche 
+    //hash successivo e hash precedente. l'hash del blocco deve essere aggiornato ogni volta che si effettua una transazione,
+    //con questo aggiorna anche l'hash successivo del blocco precedente e l'hash precendente del blocco succ
+    
+
+    public function __construct($actual,$first = null,$precedente = null){
         if($first == null){ 
             $this->actual = $actual;
             $this->successivo = new Host();
@@ -25,8 +30,9 @@ class Block {
             $this->precedente = new Host();
             $this->transactions = [];
             $this->id = $this->calculateId();
+            //aggiorna il blocco precedente con il giusto hash
         }
-        
+        $this->saveJson();   //almeno si salva in automatico
     }
 
     private function calculateHash() {
@@ -63,8 +69,13 @@ class Block {
         }
         return $s;
     }
-
     public function saveJson(){
+        //di solito il json si crea in automatico dato un oggetto, prova a cercare la funzione 
+        //che lo faccia, se non la trovi fai così e fai la import json che sarà una funzione statica 
+        //che potrà essere richiamata e ritornerà un oggetto block
+        //così almeno quando andiamo a cercare l'ultimo host possiamo fare meglio
+        //ad es in addblock quando devo cercare l'ultimo host, dato l'ip e la porta prendo il file json.block e creo 
+        //l'oggetto e guardo se successivo è null
         $data = [
             'id' => $this->id,
             'hash' => $this->calculateHash(),
@@ -82,6 +93,13 @@ class Block {
 
         $filename = 'block_'.$this->id.'.json';
         file_put_contents($filename, $json_data);
+        // il file json deve essere salvato sull'host actual e non così
+    }
+    private function updateOtherJson($host){
+        //funzione che servirà per aggiornare il json dell'host passato
+        // quindi trova il metodo per aggiornare il file su un altro server data porta e id e aggiorna 
+        // il json, so che a parole sono bravi tutti e nemmeno io lo so fare, ma proviamoci che magari, non dico tutto,
+        // ma qualcosina possiamo fare
     }
 
     public function getSuccessivo(){
@@ -110,6 +128,7 @@ class Block {
 
     public function addTransactions($trans) {
         array_push($this->transactions,$trans);
+        $this->saveJson();   //almeno si salva in automatico
     }
     private function printArray(){
         $arr=[];
