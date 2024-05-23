@@ -16,7 +16,7 @@ class Host{
     public function setPorta($porta){
         $this->porta = $porta;
     }
-    public function getPorta($porta){
+    public function getPorta(){
         return $this->porta;
     }
 

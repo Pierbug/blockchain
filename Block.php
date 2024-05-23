@@ -47,10 +47,12 @@ class Block {
     public function saveJson(){
         $data = [
             'id' => $this->id,
-            'actual' => $this->actual,
-            'transactions' => $this->transactions,
-            'successivo' => $this->successivo, // Assuming Host class has __toString() or similar method
-            'precedente' => $this->precedente  // Assuming Host class has __toString() or similar method
+            'actual IP' => $this->actual->getIp(),
+            'actual Port' => $this->actual->getPorta(),
+            'successivo IP' => $this->successivo->getIp(),
+            'successivo Port' => $this->successivo->getPorta(), 
+            'precedente IP' => $this->precedente->getIp(),
+            'precedente Port' => $this->precedente->getPorta()
         ];
 
         $json_data = json_encode($data, JSON_PRETTY_PRINT);
