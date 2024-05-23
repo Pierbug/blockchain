@@ -10,29 +10,21 @@ class Block {
     private $successivo;
     private $precedente;
 
-    //grande problema da risolvere: noi non abbiamo l'hash tra i dati e va messo olttre a mettere anche 
-    //hash successivo e hash precedente. l'hash del blocco deve essere aggiornato ogni volta che si effettua una transazione,
+    //grande problema da risolvere: noi non abbiamo l'hash tra i dati e va messo olttre a mettere anche hash successivo e hash precedente. 
+    //l'hash del blocco deve essere aggiornato ogni volta che si effettua una transazione ||FATTO||
     //con questo aggiorna anche l'hash successivo del blocco precedente e l'hash precendente del blocco succ
+
+    //MENATA FESS (riga 13-15)
     
 
-    public function __construct($actual,$first = null,$precedente = null){
-        if($first == null){ 
-            $this->actual = $actual;
-            $this->successivo = new Host();
-            $this->first = $actual;
-            $this->precedente = new Host();
-            $this->transactions = [];
-            $this->id = $this->calculateId();
-        }else{
-            $this->actual = $actual;
-            $this->successivo = new Host();
-            $this->first = $first;
-            $this->precedente = new Host();
-            $this->transactions = [];
-            $this->id = $this->calculateId();
-            //aggiorna il blocco precedente con il giusto hash
-        }
-        $this->saveJson();   //almeno si salva in automatico
+    public function __construct($actual,$precedente = null){//metteri come parametro possibile $id = calculateId() se si puo cosi
+        $this->actual = $actual;                            //almeno si puo aggiornare json attraverso quello siccome il filename è id
+        $this->successivo = new Host();
+        $this->first = new Host("192.168.12.10",80);
+        $this->precedente = new Host();
+        $this->transactions = [];
+        $this->id = $this->calculateId();
+        //sbagliato farlo ogni volta che si crea perche se io creo un oggetto ogni volta che ricerco si creano infinit file
     }
 
     private function calculateHash() {
@@ -90,16 +82,14 @@ class Block {
             'transazioni' => $this->printArray()
         ];
         $json_data = json_encode($data, JSON_PRETTY_PRINT);
+        $filename = "".$this->id.".json";
 
-        $filename = 'block_'.$this->id.'.json';
-        file_put_contents($filename, $json_data);
-        // il file json deve essere salvato sull'host actual e non così
+        file_put_contents($filename, $json_data);                       //provato Download(fallimentare) per ora terrei cosi
     }
+
     private function updateOtherJson($host){
-        //funzione che servirà per aggiornare il json dell'host passato
-        // quindi trova il metodo per aggiornare il file su un altro server data porta e id e aggiorna 
-        // il json, so che a parole sono bravi tutti e nemmeno io lo so fare, ma proviamoci che magari, non dico tutto,
-        // ma qualcosina possiamo fare
+        //piuttosto che questo farei che ogni aggiunta di transazione o in generale modifica nella classe si faccia il saveJSON cosi almeno sovvrascrive
+        //i dati tramite id
     }
 
     public function getSuccessivo(){
@@ -108,6 +98,11 @@ class Block {
 
     public function setSuccessivo($successivo){
         $this->successivo = $successivo;
+        $this->calculateHash();            //Se si aggiunge successivo calcola hash
+    }
+
+    public function getPrimo(){
+        return $this->first;
     }
 
     public function getPrecedente(){
@@ -116,6 +111,7 @@ class Block {
 
     public function setPrecedente($precedente){
         $this->precedente = $precedente;
+        $this->calculateHash();            //Se si aggiunge precedente calcola hash
     }
 
     public function getActual(){
@@ -125,10 +121,14 @@ class Block {
     public function getId() {
         return $this->id;
     }
+    public function getTransactions(){
+        return $this->transactions;
+    }
 
     public function addTransactions($trans) {
         array_push($this->transactions,$trans);
-        $this->saveJson();   //almeno si salva in automatico
+        $this->calculateHashtransaction();          //calcola hash ogni volta che aggiungi
+        $this->calculateHash();
     }
     private function printArray(){
         $arr=[];

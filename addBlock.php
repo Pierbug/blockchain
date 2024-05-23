@@ -3,7 +3,7 @@ require_once("Block.php");
 require_once("Host.php");
 require_once("Transaction.php");
     if(isset($_POST['ipBlocco']) && isset($_POST['portaBlocco'])){
-        new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']),new Host("192.168.12.15",80),);
+        $block = new Block(new Host($_POST['ipBlocco'],$_POST['portaBlocco']),$first);
     }else{
 
 ?>
@@ -30,10 +30,6 @@ require_once("Transaction.php");
 </html>
 <?php
     }
-    function firstHost(){
-        return new Host("192.168.12.15",80);
-    }
-    
     // function lastHost(){
     // $host = null;  
     //     if(){
