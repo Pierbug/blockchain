@@ -1,6 +1,6 @@
 <?php
-require("Host.php");
-require("Transaction.php");
+require_once("Host.php");
+require_once("Transaction.php");
 
 class Block {
     private $id;
@@ -9,28 +9,43 @@ class Block {
     private $transactions = [];
     private $successivo;
     private $precedente;
-    private $hash;     //hash utile
-    //grande problema da risolvere: noi non abbiamo l'hash tra i dati e va messo olttre a mettere anche hash successivo e hash precedente. 
-    //l'hash del blocco deve essere aggiornato ogni volta che si effettua una transazione ||FATTO||
-    //con questo aggiorna anche l'hash successivo del blocco precedente e l'hash precendente del blocco succ
 
-    //MENATA FESS (riga 13-15)
-    
+    private $hash;
+    private $hash_succ;
+    private $hash_prec;
 
-    public function __construct($actual,$id = null,$precedente = null){//metteri come parametro possibile $id = calculateId() se si puo cosi
-        $this->actual = $actual;                            //almeno si puo aggiornare json attraverso quello siccome il filename è id
-        $this->successivo = new Host();
-        $this->first = new Host("192.168.12.10",80);
-        $this->precedente = new Host();
-        $this->transactions = [];
-        $this->hash = $this->calculateHash();
-        if($id == null)
-            $this->id = $this->calculateId();   //fatto cio perche se è un nuovo blocco genero id
-        else{
-            $this->id = $id;                    //se id è passato allora poi faccio importJSON con i dati del blocco
-            $this->importJson();
-        } 
-        //sbagliato salvare json ogni volta che si crea perche se io creo un oggetto ogni volta che ricerco si creano infinit file
+    public function __construct($actual,$first = null,$precedente = null){
+        if($first == null){ 
+            $this->actual = $actual;
+            $this->successivo = new Host();
+            $this->first = $actual;
+            $this->precedente = new Host();
+            $this->transactions = [];
+            $this->id = $this->calculateId();
+            $this->hash=$this->calculateHash();
+            $this->hash_prec = null;
+            $this->hash_succ = null;
+        } else {
+            if (file_exists('http://' . $actual->getIp() . ':' . $actual->getPorta() . '/block.json')) {
+                $this->importjson();
+            } else {
+                $this->actual = $actual;
+                $this->successivo = new Host();
+                $this->first = $first;
+                $this->precedente = new Host();
+                $this->transactions = [];
+                $this->id = $this->calculateId();
+                $this->hash = $this->calculateHash();
+                $this->hash_prec = $this->calculatePrecHash();
+                $this->hash_succ = null;
+                $this->updateOtherJson($this->precedente);
+            }
+        }
+        $this->saveJson();   
+    }
+    private function calculatePrecHash(){
+        $block= new Block($this->precedente,Block::firstHost());
+        return $block->getHash();
     }
 
     private function calculateHash() {
@@ -67,33 +82,12 @@ class Block {
         }
         return $s;
     }
-
-    public function importJson(){
-        $filename = "".$this->id.".json";
-        $json = file_get_contents($filename);
-        $array = json_decode($json, true);
-        $trans = $array['transazioni'];
-        $this->id = $array['id'];
-        $this->hash = $array['hash'];
-        $this->actual = new Host($array['actual IP'],$array['actual Port']);
-        $this->successivo = new Host($array['successivo IP'],$array['successivo Port']);
-        $this->precedente = new Host($array['precedente IP'],$array['precedente Port']);
-        for($i=0;$i<count($trans);$i++){
-            $t = $trans[$i];
-            $this->addTransactions(new Transaction($t['mittente'],$t['destinatario'],$t['amount'],$t['time'],$t['hash']));
-        }
-    }
-
     public function saveJson(){
-        //di solito il json si crea in automatico dato un oggetto, prova a cercare la funzione 
-        //che lo faccia, se non la trovi fai così e fai la import json che sarà una funzione statica 
-        //che potrà essere richiamata e ritornerà un oggetto block
-        //così almeno quando andiamo a cercare l'ultimo host possiamo fare meglio
-        //ad es in addblock quando devo cercare l'ultimo host, dato l'ip e la porta prendo il file json.block e creo 
-        //l'oggetto e guardo se successivo è null
         $data = [
             'id' => $this->id,
-            'hash' => $this->calculateHash(),
+            'hash' => $this->hash,
+            'hash_succ'=>$this->hash_succ,
+            'hash_prec'=>$this->hash_prec,
             'actual IP' => $this->actual->getIp(),
             'actual Port' => $this->actual->getPorta(),
             'first IP' => $this->first->getIp(),
@@ -105,27 +99,73 @@ class Block {
             'transazioni' => $this->printArray()
         ];
         $json_data = json_encode($data, JSON_PRETTY_PRINT);
-        $filename = "".$this->id.".json";
-
-        file_put_contents($filename, $json_data);                       //provato Download(fallimentare) per ora terrei cosi
+        file_put_contents('http://' . $this->actual->getIp() . ':' . $this->actual->getPorta() . '/block.json', $json_data);
     }
-
-    private function updateOtherJson($host){
-        //piuttosto che questo farei che ogni aggiunta di transazione o in generale modifica nella classe si faccia il saveJSON cosi almeno sovvrascrive
-        //i dati tramite id
+    public function importJson(){
+        $filename = 'http://' . $this->actual->getIp() . ':' . $this->actual->getPorta() . '/block.json';
+        $json = file_get_contents($filename);
+        $array = json_decode($json, true);
+        $trans = $array['transazioni'];
+        $this->id = $array['id'];
+        $this->hash = $array['hash'];
+        $this->hash_prec = $array['hash_prec'];
+        $this->hash_succ = $array['hash_succ'];
+        $this->first=new Host($array['first IP'],$array['first Port']);
+        $this->actual = new Host($array['actual IP'],$array['actual Port']);
+        $this->successivo = new Host($array['successivo IP'],$array['successivo Port']);
+        $this->precedente = new Host($array['precedente IP'],$array['precedente Port']);
+        for($i=0;$i<count($trans);$i++){
+            $t = $trans[$i];
+            $this->addTransactions(new Transaction($t['mittente'],$t['destinatario'],$t['amount'],$t['time']));
+        }
     }
-
+    private function updateOtherJson($host, $prec=true){
+        $filename = 'http://' . $host->getIp() . ':' . $host->getPorta() . '/block.json';
+        $json = file_get_contents($filename);
+        $array = json_decode($json, true);
+        $trans = $array['transazioni'];
+        $id = $array['id'];
+        $hash = $array['hash'];
+        if ($prec) {
+            $hash_prec = $this->hash_prec;
+            $hash_succ = $array['hash_succ'];
+        }else{
+            $hash_prec = $array['hash_prec'];
+            $hash_succ = $this->hash_succ;
+        }
+        
+        $actual = new Host($array['actual IP'],$array['actual Port']);
+        $successivo = new Host($array['successivo IP'],$array['successivo Port']);
+        $precedente = new Host($array['precedente IP'],$array['precedente Port']);
+        $first=new Host($array['first IP'],$array['first Port']);
+        $data = [
+            'id' => $id,
+            'hash' => $hash,
+            'hash_succ'=>$hash_succ,
+            'hash_prec'=>$hash_prec,
+            'actual IP' => $actual->getIp(),
+            'actual Port' => $actual->getPorta(),
+            'first IP' => $first->getIp(),
+            'first Port' => $first->getPorta(),
+            'successivo IP' => $successivo->getIp(),
+            'successivo Port' => $successivo->getPorta(), 
+            'precedente IP' => $precedente->getIp(),
+            'precedente Port' => $precedente->getPorta(),
+            'transazioni' => $trans
+        ];
+        $json_data = json_encode($data, JSON_PRETTY_PRINT);
+        file_put_contents($filename, $json_data);
+    }
+    public function getHash(){
+        return $this->hash;
+    }
+    
     public function getSuccessivo(){
         return $this->successivo;
     }
 
     public function setSuccessivo($successivo){
         $this->successivo = $successivo;
-        $this->calculateHash();            //Se si aggiunge successivo calcola hash
-    }
-
-    public function getPrimo(){
-        return $this->first;
     }
 
     public function getPrecedente(){
@@ -134,28 +174,19 @@ class Block {
 
     public function setPrecedente($precedente){
         $this->precedente = $precedente;
-        $this->calculateHash();            //Se si aggiunge precedente calcola hash
     }
 
     public function getActual(){
         return $this->actual;
     }
 
-    public function getHash(){
-        return $this->hash;
-    }
-
     public function getId() {
         return $this->id;
-    }
-    public function getTransactions(){
-        return $this->transactions;
     }
 
     public function addTransactions($trans) {
         array_push($this->transactions,$trans);
-        $this->calculateHashtransaction();          //calcola hash ogni volta che aggiungi
-        $this->calculateHash();
+        $this->saveJson();   
     }
     private function printArray(){
         $arr=[];
@@ -164,8 +195,30 @@ class Block {
         }
         return $arr;
     }
+    static function firstHost(){
+        return new Host("192.168.12.15",80);
+    }
+    static function lastHost(){
+        $firstBlock=new Block(Block::firstHost(),Block::firstHost());
+        if ($firstBlock->getSuccessivo() == null) {
+            return $firstBlock->getActual();
+        }else{
+            $host=$firstBlock->getSuccessivo();
+            while(true){
+                $block = new Block($host, Block::firstHost());
+                if($block->getSuccessivo()==null){
+                    return $block->getActual();
+                }else{
+                    $host = $block->getSuccessivo();
+                }
+            }
+        }   
+    }
+    static function hostExists($host)
+    {
+        return file_exists('http://' . $host->getIp() . ':' . $host->getPorta() . '/block.json');
+    }
+
 
 
 }
-
-?>

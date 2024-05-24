@@ -6,20 +6,17 @@ class Transaction {
     private $time;
     private $hash;
 
-    function __construct($mittente, $destinatario, $amount, $time, $hash = null) {
+    function __construct($mittente, $destinatario, $amount, $time) {
         $this->setMittente($mittente);
         $this->setDestinatario($destinatario);
         $this->setAmount($amount);
         $this->setTime($time);
-        if($hash == null)
-            $this->hash = $this->calculateHash();
-        else
-            $this->hash = $hash;        //faccio cio perche se importo transazioni hanno gia l'hash
+        $this->calculateHash();
     }
 
     private function calculateHash() {
         $dataToHash = $this->mittente . $this->destinatario . $this->amount . $this->time;
-        return hash('sha256', $dataToHash);
+        $this->hash = hash('sha256', $dataToHash);
     }
 
     public function getMittente() {

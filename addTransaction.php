@@ -2,18 +2,17 @@
 require_once("Block.php");
 require_once("Host.php");
 require_once("Transaction.php");
-if(isset($_POST['t'])){                 
-    $i = 0;
-    $block = new Block(new Host("192.168.12.10",80));           
-    while($i = 0){
-        if(count($block->getTransactions()) == 100){                //in qualche maniera non funziona
-            $next = $block->getSuccessivo();
-            $block = new Block($next);
-        }else{
-            $block->addTransactions(new Transaction($_POST['mitt'],$_POST['dest'],$_POST['amou'],date('Y-m-d H:i:s')));
-            $block->saveJson();
-            $i++;
-        }
+if(isset($_POST['ipBlocco']) && isset($_POST['portaBlocco']) && isset($_POST['mittente']) 
+&& isset($_POST['destinatario']) && isset($_POST['amount']))
+{
+    if(Block::hostExists(new Host($_POST['ipBlocco'], $_POST['porta'])))
+    {
+        $block=new Block(new Host($_POST['ipBlocco'], $_POST['porta']),Block::firstHost(),Block::lastHost());
+        $block->addTransactions(new Transaction($_POST['mittente'], $_POST['destinatario'],$_POST['amount'], time()));
+        header("Location: index.html");
+
+    }else{
+        header("Location: index.html");
     }
     
 }else{
@@ -26,12 +25,22 @@ if(isset($_POST['t'])){
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <form method="post" action="">
-            <input type="text" name="mitt" placeholder="Mittente">
-            <input type="text" name="dest" placeholder="Destinatario">
-            <input type="text" name="amou" placeholder="Quantita">
-            <input type="submit" name="t" value="Invia">
+        <h1>Aggiungi una transazione</h1>
+        <div class="form-container">
+        <form method="post" action="addTransaction.php">
+                <label for="ipBlocco">IP Blocco:</label>
+                <input type="text" id="ipBlocco" name="ipBlocco" required>
+                <label for="portaBlocco">Porta Blocco:</label>
+                <input type="number" id="portaBlocco" name="portaBlocco" required>
+                <label for="ipBlocco">Mittente:</label>
+                <input type="text" name="mittente" placeholder="Mittente">
+                <label for="ipBlocco">Destinatario:</label>
+                <input type="text" name="destinatario" placeholder="Destinatario">
+                <label for="ipBlocco">Quantita:</label>
+                <input type="text" name="amount" placeholder="Quantita">
+                <input type="submit" value="Invia">
         </form>
+        </div>
     </body>
 </html>
 <?php
